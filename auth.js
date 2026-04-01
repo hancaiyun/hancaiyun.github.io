@@ -30,7 +30,9 @@
 
   function isAuthenticated(){
     const t = localStorage.getItem(STORAGE_KEY);
-    return !!t;
+    const u = localStorage.getItem(STORAGE_KEY + ':user');
+    // 修复：同时检查 token 和用户名都存在，避免旧缓存导致登录失败
+    return !!(t && u);
   }
 
   function currentUser(){
