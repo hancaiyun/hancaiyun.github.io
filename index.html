@@ -26,6 +26,8 @@
         <a href="#blog">文章</a>
         <a href="#contact">联系</a>
         <button id="theme-toggle" aria-label="切换主题">🌙</button>
+        <!-- 登出按钮：仅在已登录时显示 -->
+        <button id="logout-btn" style="display:none;margin-left:6px" aria-label="登出">登出</button>
       </nav>
     </div>
   </header>
@@ -162,6 +164,23 @@
       </nav>
     </div>
   </footer>
+
+  <!-- 认证脚本：在主脚本之前加载 -->
+  <script src="auth.js"></script>
+  <script>
+    // 页面加载后检查认证，未登录跳转登录页；显示登出按钮
+    document.addEventListener('DOMContentLoaded', function(){
+      if (!window.auth || !window.auth.isAuthenticated()) {
+        window.location.href = 'login.html';
+        return;
+      }
+      const lb = document.getElementById('logout-btn');
+      if (lb) {
+        lb.style.display = 'inline-block';
+        lb.addEventListener('click', function(){ window.auth.logout(); });
+      }
+    });
+  </script>
 
   <script src="script.js"></script>
 </body>
