@@ -3,185 +3,79 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Han Caiyun — 个人网站</title>
-  <meta name="description" content="Han Caiyun 的个人网站示例" />
+  <title>登录 — Han Caiyun</title>
+  <meta name="description" content="登录 — 个人网站示例" />
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23396cff'/%3E%3Ctext x='50' y='58' font-size='45' text-anchor='middle' fill='white' font-family='Arial'%3EH%3C/text%3E%3C/svg%3E" />
 </head>
-<body>
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="#home">
-        <!-- Simple SVG logo -->
-        <svg width="36" height="36" viewBox="0 0 100 100" aria-hidden="true" focusable="false">
-          <circle cx="50" cy="50" r="48" fill="#396cff"></circle>
-          <text x="50" y="64" font-size="60" text-anchor="middle" fill="#fff" font-family="Inter, Arial">H</text>
-        </svg>
-        <span class="brand-name">Han Caiyun</span>
-      </a>
+<body class="auth-page">
+  <main class="auth-container" role="main" aria-labelledby="loginTitle">
+    <div class="auth-card" role="region" aria-label="登录表单">
+      <h1 id="loginTitle">登录</h1>
+      <p class="muted">请输入用户名与密码以访问个人主页（演示用）。</p>
 
-      <nav class="nav">
-        <a href="#about">关于</a>
-        <a href="#projects">项目</a>
-        <a href="#blog">文章</a>
-        <a href="#contact">联系</a>
-        <button id="theme-toggle" aria-label="切换主题">🌙</button>
-        <!-- 登出按钮：仅在已登录时显示 -->
-        <button id="logout-btn" style="display:none;margin-left:6px" aria-label="登出">登出</button>
-      </nav>
+      <form id="login-form" autocomplete="on">
+        <label>
+          用户名
+          <input id="username" name="username" type="text" placeholder="admin" required />
+        </label>
+        <label>
+          密码
+          <input id="password" name="password" type="password" placeholder="••••••••" required />
+        </label>
+        <div class="auth-actions">
+          <button id="login-btn" class="btn" type="submit">登录</button>
+          <button id="clear-btn" class="btn btn-alt" type="button">清除</button>
+        </div>
+
+        <div id="login-msg" class="muted" aria-live="polite" style="margin-top:10px"></div>
+      </form>
+
+      <div style="margin-top:12px;font-size:13px;color:var(--muted);">
+        <strong>��示：</strong>默认账号 <code>admin</code> / <code>admin</code>（仅示例）。
+      </div>
     </div>
-  </header>
 
-  <main>
-    <section id="home" class="hero">
-      <div class="container hero-inner">
-        <div class="hero-text">
-          <h1>你好，我是 Han Caiyun</h1>
-          <p class="lead">前端工程师 · 开源爱好者 · 技术写作者</p>
-          <p>我写代码、构建网站并分享学习笔记。如果你想了解我的项目或合作，请往下看或通过邮件联系我。</p>
-          <div class="hero-ctas">
-            <a class="btn" href="#projects">查看项目</a>
-            <a class="btn btn-alt" href="#contact">联系我</a>
-          </div>
-        </div>
-
-        <div class="hero-card" aria-hidden="true">
-          <!-- Simple profile card -->
-          <div class="avatar" title="Han Caiyun">
-            <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <linearGradient id="g" x1="0" x2="1">
-                  <stop offset="0" stop-color="#396cff" />
-                  <stop offset="1" stop-color="#6d8bff" />
-                </linearGradient>
-              </defs>
-              <circle cx="60" cy="60" r="58" fill="url(#g)"/>
-              <text x="60" y="75" font-size="48" text-anchor="middle" fill="#fff" font-family="Inter, Arial">H</text>
-            </svg>
-          </div>
-          <div class="card-info">
-            <h3>Han Caiyun</h3>
-            <p>构建以人为本的产品与网站</p>
-            <div class="badges">
-              <span>JavaScript</span>
-              <span>HTML</span>
-              <span>CSS</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="about" class="container about">
-      <h2>关于我</h2>
-      <div class="about-grid">
-        <div>
-          <p>我专注于前端开发与用户体验设计，喜欢使用现代工具链（Vite、ESBuild、React/Vue、Tailwind 等）来搭建快速、可维护的前端应用。</p>
-          <ul>
-            <li>开发过中小型产品并负责从原型到发布的全过程</li>
-            <li>热衷开源，喜欢写技术文章</li>
-            <li>兴趣：摄影、跑步、极简设计</li>
-          </ul>
-        </div>
-        <div class="skills">
-          <h3>技能</h3>
-          <div class="skill-list">
-            <div class="skill">
-              <strong>Frontend</strong>
-              <span>HTML · CSS · JavaScript</span>
-            </div>
-            <div class="skill">
-              <strong>Frameworks</strong>
-              <span>React · Vue</span>
-            </div>
-            <div class="skill">
-              <strong>Tooling</strong>
-              <span>Vite · Webpack · Git</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="projects" class="container projects">
-      <h2>项目</h2>
-      <div class="projects-grid" id="projects-list">
-        <!-- Projects populated by script.js -->
-      </div>
-      <p class="muted">这个区域是示例卡片。你可以把真实项目链接、描述和仓库链接放到 projects 数组中。</p>
-    </section>
-
-    <section id="blog" class="container blog">
-      <h2>文章</h2>
-      <ul class="posts" id="posts-list">
-        <!-- Posts populated by script.js -->
-      </ul>
-      <p class="muted">示例文章用于展示布局。可以接入 Markdown 或 RSS。</p>
-    </section>
-
-    <section id="contact" class="container contact">
-      <h2>联系我</h2>
-      <div class="contact-grid">
-        <div>
-          <p>想合作或交流？给我发邮件：</p>
-          <p><a href="mailto:you@example.com">you@example.com</a></p>
-          <p>或通过社交媒体联系：</p>
-          <p>
-            <a href="#" aria-label="GitHub">GitHub</a> ·
-            <a href="#" aria-label="Twitter">Twitter</a> ·
-            <a href="#" aria-label="LinkedIn">LinkedIn</a>
-          </p>
-        </div>
-
-        <form id="contact-form" onsubmit="event.preventDefault(); alert('示例表单：请在代码中替换为真实表单处理。')">
-          <label>
-            名称
-            <input type="text" name="name" placeholder="你的名字" required />
-          </label>
-          <label>
-            邮箱
-            <input type="email" name="email" placeholder="you@example.com" required />
-          </label>
-          <label>
-            内容
-            <textarea name="message" rows="5" placeholder="写点什么..." required></textarea>
-          </label>
-          <div style="display:flex;gap:10px;align-items:center">
-            <button class="btn" type="submit">发送</button>
-            <button class="btn btn-alt" type="reset">重置</button>
-          </div>
-        </form>
-      </div>
-    </section>
+    <footer style="margin-top:18px;text-align:center;color:var(--muted);font-size:14px;">
+      <a href="index.html">返回主页（需登录）</a>
+    </footer>
   </main>
 
-  <footer class="site-footer">
-    <div class="container footer-inner">
-      <span>© <span id="year"></span> Han Caiyun — All rights reserved.</span>
-      <nav>
-        <a href="#home">回到顶部</a>
-        <a href="#contact">联系</a>
-      </nav>
-    </div>
-  </footer>
-
-  <!-- 认证脚本：在主脚本之前加载 -->
   <script src="auth.js"></script>
   <script>
-    // 页面加载后检查认证，未登录跳转登录页；显示登出按钮
-    document.addEventListener('DOMContentLoaded', function(){
-      if (!window.auth || !window.auth.isAuthenticated()) {
-        window.location.href = 'login.html';
+    // 登录页逻辑：调用 auth.js 提供的接口
+    (function(){
+      if (window.auth && window.auth.isAuthenticated()) {
+        window.location.href = 'index.html';
         return;
       }
-      const lb = document.getElementById('logout-btn');
-      if (lb) {
-        lb.style.display = 'inline-block';
-        lb.addEventListener('click', function(){ window.auth.logout(); });
-      }
-    });
-  </script>
 
-  <script src="script.js"></script>
+      const form = document.getElementById('login-form');
+      const msg = document.getElementById('login-msg');
+      const clearBtn = document.getElementById('clear-btn');
+
+      form.addEventListener('submit', function(e){
+        e.preventDefault();
+        const u = document.getElementById('username').value.trim();
+        const p = document.getElementById('password').value;
+        const ok = window.auth.login(u, p);
+        if (ok) {
+          msg.style.color = 'inherit';
+          msg.textContent = '登录成功，正在跳转…';
+          setTimeout(()=> { window.location.href = 'index.html'; }, 450);
+        } else {
+          msg.style.color = 'var(--accent)';
+          msg.textContent = '登录失败：用户名或密码错误';
+        }
+      });
+
+      clearBtn.addEventListener('click', function(){
+        form.reset();
+        msg.textContent = '';
+      });
+
+      document.getElementById('username').focus();
+    })();
+  </script>
 </body>
 </html>
