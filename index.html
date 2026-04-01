@@ -1,78 +1,33 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>首页 — Han Caiyun</title>
-  <meta name="description" content="个人主页" />
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23396cff'/%3E%3Ctext x='50' y='58' font-size='45' text-anchor='middle' fill='white' font-family='Arial'%3EH%3C/text%3E%3C/svg%3E" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 800px; margin: auto; padding: 20px; }
+        .logout-btn { padding: 10px 15px; background-color: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .logout-btn:hover { background-color: #0056b3; }
+    </style>
 </head>
-<body class="auth-page">
-  <main class="auth-container" role="main">
-    <div class="auth-card">
-      <h1>欢迎回来！</h1>
-      <p class="muted">您已成功登录个人主页。</p>
-
-      <div id="user-info" style="margin: 20px 0; padding: 15px; background: rgba(57, 108, 255, 0.1); border-radius: 8px;">
-        <p><strong>当前用户：</strong> <span id="current-user" style="color: #396cff;">加载中...</span></p>
-      </div>
-
-      <div style="margin: 20px 0; padding: 15px; background: rgba(0, 0, 0, 0.05); border-radius: 8px; border-left: 3px solid #396cff;">
-        <h3 style="margin-top: 0;">功能说明（演示版）</h3>
-        <ul style="margin: 10px 0; padding-left: 20px;">
-          <li>这是一个简单的前端认证示例</li>
-          <li>用户登录信息保存在本地浏览器缓存中</li>
-          <li>注意：仅用于演示目的，实际应用需后端认证</li>
-        </ul>
-      </div>
-
-      <div style="display: flex; gap: 10px; margin-top: 20px;">
-        <button id="logout-btn" class="btn" style="flex: 1;">登出</button>
-        <button id="clear-cache-btn" class="btn btn-alt" style="flex: 1;">清空缓存</button>
-      </div>
+<body>
+    <div class="container">
+        <h1>欢迎回来！</h1>
+        <p>您已成功登录到个人主页。</p>
+        <p>用户名：<span id="username"></span></p>
+        <button class="logout-btn" onclick="logout()">登出</button>
     </div>
-
-    <footer style="margin-top: 18px; text-align: center; color: var(--muted); font-size: 14px;">
-      <a href="login.html">返回登录页</a>
-    </footer>
-  </main>
-
-  <script src="auth.js"></script>
-  <script>
-    // 首页逻辑：检查认证状态
-    (function(){
-      console.log('Index page loaded');
-      
-      // 如果未认证，重定向到登录页
-      if (!window.auth || !window.auth.isAuthenticated()) {
-        console.log('Not authenticated, redirecting to login');
-        window.location.href = 'login.html';
-        return;
-      }
-
-      console.log('User is authenticated');
-      
-      // 显示当前用户
-      const currentUser = window.auth.currentUser();
-      console.log('Current user:', currentUser);
-      document.getElementById('current-user').textContent = currentUser || '未知用户';
-
-      // 登出按钮
-      document.getElementById('logout-btn').addEventListener('click', function(){
-        console.log('Logout clicked');
-        window.auth.logout('login.html');
-      });
-
-      // 清空缓存按钮
-      document.getElementById('clear-cache-btn').addEventListener('click', function(){
-        if (confirm('确定要清空所有缓存吗？')) {
-          console.log('Clearing cache');
-          localStorage.clear();
-          window.location.href = 'login.html';
+    <script src="auth.js"></script>
+    <script>
+        if (!window.auth || !window.auth.isAuthenticated()) {
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('username').textContent = window.auth.currentUser();
         }
-      });
-    })();
-  </script>
+        function logout() {
+            window.auth.logout('login.html');
+        }
+    </script>
 </body>
 </html>
