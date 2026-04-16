@@ -1,56 +1,37 @@
 <template>
-  <div class="timeline">
-    <h2>Work Experience Timeline</h2>
-    <div v-for="job in jobs" :key="job.position" class="timeline-item">
-      <h3>{{ job.position }}</h3>
-      <span>{{ job.company }} ({{ job.startYear }} - {{ job.endYear }})</span>
-      <ul>
-        <li v-for="achievement in job.achievements" :key="achievement">{{ achievement }}</li>
-      </ul>
+  <section id="timeline" class="section timeline">
+    <h2>开发历程</h2>
+    <div v-for="item in timeline" :key="item.title" class="timeline-item">
+      <h3>{{ item.title }}</h3>
+      <p class="period">{{ item.period }}</p>
+      <p>{{ item.content }}</p>
     </div>
-  </div>
+  </section>
 </template>
 
 <script>
 export default {
+  name: 'Timeline',
   data() {
     return {
-      jobs: [
+      timeline: [
         {
-          position: 'Software Engineer',
-          company: 'Company A',
-          startYear: 2020,
-          endYear: 2022,
-          achievements: [
-            'Developed feature X',
-            'Improved performance by 20%',
-            'Mentored interns'
-          ]
+          title: '初版搭建',
+          period: '2024 Q1',
+          content: '完成站点基础框架和首批页面内容。'
         },
         {
-          position: 'Senior Software Engineer',
-          company: 'Company B',
-          startYear: 2022,
-          endYear: 2026,
-          achievements: [
-            'Led project Y',
-            'Increased team efficiency by 30%',
-            'Implemented CI/CD pipeline'
-          ]
+          title: '内容补全',
+          period: '2025 Q3',
+          content: '补充项目与能力信息，统一页面结构与视觉风格。'
+        },
+        {
+          title: '首页重构',
+          period: '2026 Q2',
+          content: '围绕“主页面重新开发”目标完成组件整合和样式升级。'
         }
       ]
     };
   }
 };
 </script>
-
-<style scoped>
-.timeline {
-  padding: 20px;
-}
-.timeline-item {
-  margin-bottom: 20px;
-  border-left: 2px solid #007BFF;
-  padding-left: 20px;
-}
-</style>

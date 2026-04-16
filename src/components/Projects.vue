@@ -1,46 +1,26 @@
 <template>
-  <div class="project-portfolio">
-    <h1>Project Portfolio</h1>
-    <div class="project-cards">
-      <div class="project-card">
-        <h2>E-Commerce Platform</h2>
-        <p>A feature-rich e-commerce platform for online shopping.</p>
-      </div>
-      <div class="project-card">
-        <h2>CMS System</h2>
-        <p>A content management system for managing web content.</p>
-      </div>
-      <div class="project-card">
-        <h2>Data Visualization Platform</h2>
-        <p>A platform for visualizing complex data in interactive charts.</p>
-      </div>
-      <div class="project-card">
-        <h2>Mobile App</h2>
-        <p>A mobile application for on-the-go access to services.</p>
+  <section id="projects" class="section">
+    <h2>精选项目</h2>
+    <div class="grid">
+      <div v-for="project in projects" :key="project.name" class="card">
+        <h3>{{ project.name }}</h3>
+        <p>{{ project.description }}</p>
       </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script>
 export default {
   name: 'Projects',
+  data() {
+    return {
+      projects: [
+        { name: '个人主页重构', description: '使用 Vue + Vite 重新组织首页结构并优化展示体验。' },
+        { name: '博客系统', description: '支持文章管理、标签归档和静态部署的内容站点。' },
+        { name: '可视化看板', description: '构建业务数据大屏，提升关键指标可视化效率。' }
+      ]
+    };
+  }
 };
 </script>
-
-<style scoped>
-.project-portfolio {
-  padding: 20px;
-}
-.project-cards {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-.project-card {
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: 16px;
-  width: 200px;
-}
-</style>

@@ -1,48 +1,26 @@
 <template>
-  <div class="skills-container">
-    <div class="card" v-for="skill in skills" :key="skill.name">
-      <h3>{{ skill.name }}</h3>
-      <p>{{ skill.description }}</p>
+  <section id="skills" class="section">
+    <h2>核心能力</h2>
+    <div class="grid">
+      <div class="card" v-for="skill in skills" :key="skill.name">
+        <h3>{{ skill.name }}</h3>
+        <p>{{ skill.description }}</p>
+      </div>
     </div>
-  </div>
+  </section>
 </template>
 
 <script>
 export default {
+  name: 'Skills',
   data() {
     return {
       skills: [
-        { name: 'Frontend', description: 'Building responsive and interactive web interfaces.' },
-        { name: 'Backend', description: 'Server-side logic and database management.' },
-        { name: 'Mobile', description: 'Developing mobile applications for iOS and Android.' },
-        { name: 'DevOps', description: 'Continuous integration and delivery processes.' },
-        { name: 'Performance', description: 'Optimizing application speed and efficiency.' },
-        { name: 'Security', description: 'Ensuring application security and data protection.' }
+        { name: '前端工程化', description: '熟悉 Vue 生态、组件化开发与打包部署流程。' },
+        { name: '产品实现', description: '将需求快速拆解并落地为可迭代页面能力。' },
+        { name: '体验优化', description: '关注性能、响应式布局与交互一致性。' }
       ]
     };
   }
 };
 </script>
-
-<style scoped>
-.skills-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-.card {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  width: 200px;
-  transition: transform 0.3s;
-}
-.card:hover {
-  transform: scale(1.05);
-}
-h3 {
-  margin: 0 0 10px;
-}
-</style>
