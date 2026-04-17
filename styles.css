@@ -367,4 +367,19 @@ footer {
   background: #f8fafc;
   transform: translateY(-1px);
 }
+/* 第五步：锚点定位偏移，避免被 sticky navbar 挡住 */
+section,
+header {
+  scroll-margin-top: 86px;
+}
+
+/* 第五步：导航当前项高亮 */
+.nav-links a.active {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.nav-links a.active::after {
+  width: 100%;
+}
 }
