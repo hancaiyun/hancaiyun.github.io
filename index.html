@@ -1,20 +1,20 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your Tech Blog</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <nav class="navbar">
-    <div class="logo">Your Blog</div>
+    <div class="logo"><a href="/">Your Blog</a></div>
     <div class="nav-links">
       <a href="#about">About</a>
       <a href="#posts">Latest Posts</a>
       <a href="#tech-stack">Tech Stack</a>
       <a href="#contact">Contact</a>
-<a href="https://github.com/hancaiyun" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://github.com/hancaiyun" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
   </nav>
 
@@ -22,8 +22,15 @@
     <h1>Welcome to My Technical Blog</h1>
     <p>Explore my insights and projects in tech.</p>
     <div class="cta-buttons">
-      <button>Read My Latest Posts</button>
-      <button>Subscribe</button>
+      <a class="btn btn-primary" href="#posts">Read My Latest Posts</a>
+      <a
+        class="btn btn-secondary"
+        href="https://github.com/hancaiyun?tab=repositories"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        View Projects
+      </a>
     </div>
   </header>
 
@@ -32,7 +39,7 @@
     <div class="card">
       <h3>Understanding Vue.js</h3>
       <p>A comprehensive guide to Vue.js and its ecosystem.</p>
-      <button>Read More</button>
+      <a class="btn btn-primary" href="#posts">Read More</a>
     </div>
   </section>
 
@@ -78,7 +85,10 @@
 
   <section id="contact">
     <h2>Contact</h2>
-    <p>Welcome to connect with me on GitHub.</p>
+    <p>
+      Welcome to connect with me on
+      <a href="https://github.com/hancaiyun" target="_blank" rel="noopener noreferrer">GitHub</a>.
+    </p>
   </section>
 
   <footer>
