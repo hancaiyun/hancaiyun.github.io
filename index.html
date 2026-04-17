@@ -94,5 +94,44 @@
   <footer>
     <p>&copy; 2026 Your Blog. All Rights Reserved.</p>
   </footer>
+<script>
+  (function () {
+    const navLinks = Array.from(document.querySelectorAll('.nav-links a[href^="#"]'));
+    const sections = navLinks
+      .map(link => document.querySelector(link.getAttribute('href')))
+      .filter(Boolean);
+
+    if (!navLinks.length || !sections.length) return;
+
+    function setActiveByScroll() {
+      const offset = 110; // 考虑 sticky nav 高度
+      let currentId = sections[0].id;
+
+      for (const section of sections) {
+        const top = section.getBoundingClientRect().top + window.scrollY;
+        if (window.scrollY + offset >= top) {
+          currentId = section.id;
+        }
+      }
+
+      navLinks.forEach(link => {
+        const target = link.getAttribute('href').slice(1);
+        link.classList.toggle('active', target === currentId);
+      });
+    }
+
+    // 初次执行 + 滚动监听
+    setActiveByScroll();
+    window.addEventListener('scroll', setActiveByScroll, { passive: true });
+
+    // 点击后立刻切换 active（提升交互即时感）
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+      });
+    });
+  })();
+</script>
 </body>
 </html>
