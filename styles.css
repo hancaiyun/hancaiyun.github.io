@@ -327,4 +327,44 @@ footer {
   .post-card {
     background: linear-gradient(180deg, #0f172a 0%, #101a2f 100%);
   }
+/* 第四步：链接按钮化 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  border-radius: 10px;
+  padding: 0.68rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  border: 1px solid transparent;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+  border-color: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+.btn-secondary:hover {
+  border-color: #cbd5e1;
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
 }
