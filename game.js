@@ -11,6 +11,10 @@ const overlayKickerElement = document.getElementById("overlayKicker");
 const overlayTitleElement = document.getElementById("overlayTitle");
 const overlayTextElement = document.getElementById("overlayText");
 const overlayButton = document.getElementById("overlayButton");
+const playfieldStageElement = document.querySelector(".playfield-stage");
+
+const boardBaseWidth = 720;
+const boardBaseHeight = 520;
 
 const trayLimit = 7;
 const tileTypes = [
@@ -109,6 +113,20 @@ const state = {
   combo: 0,
   hintTileId: null
 };
+
+function updateBoardScale() {
+  if (!playfieldStageElement) {
+    return;
+  }
+
+  const stageStyle = window.getComputedStyle(playfieldStageElement);
+  const horizontalPadding = parseFloat(stageStyle.paddingLeft) + parseFloat(stageStyle.paddingRight);
+  const availableWidth = Math.max(playfieldStageElement.clientWidth - horizontalPadding, 280);
+  const scale = Math.min(1, availableWidth / boardBaseWidth);
+
+  playfieldStageElement.style.setProperty("--board-scale", String(scale));
+  playfieldStageElement.style.setProperty("--board-shell-height", `${Math.round(boardBaseHeight * scale)}px`);
+}
 
 function shuffle(array) {
   const copy = [...array];
@@ -364,6 +382,7 @@ function showHint() {
 }
 
 function startGame() {
+  updateBoardScale();
   state.tiles = generateSolvableTiles();
   state.tray = [];
   state.combo = 0;
@@ -383,5 +402,7 @@ overlayElement.addEventListener("click", event => {
     closeOverlay();
   }
 });
+
+window.addEventListener("resize", updateBoardScale);
 
 startGame();
