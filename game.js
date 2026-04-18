@@ -21,6 +21,27 @@ const boardBaseWidth = 720;
 const boardBaseHeight = 520;
 const audioSettingsKey = "meadow-match-audio-settings";
 const bgmNotePattern = [261.63, 329.63, 392, 329.63, 293.66, 349.23, 440, 349.23, 261.63, 329.63, 392, 523.25];
+const typeSoundProfiles = {
+  "青草": { base: 520, wave: "sine", accent: 660 },
+  "苹果": { base: 560, wave: "triangle", accent: 740 },
+  "胡萝卜": { base: 500, wave: "square", accent: 670 },
+  "花朵": { base: 610, wave: "triangle", accent: 820 },
+  "草莓": { base: 575, wave: "triangle", accent: 760 },
+  "葡萄": { base: 545, wave: "sine", accent: 710 },
+  "柠檬": { base: 640, wave: "square", accent: 860 },
+  "蘑菇": { base: 470, wave: "sine", accent: 620 },
+  "铃铛": { base: 700, wave: "triangle", accent: 920 },
+  "叶片": { base: 530, wave: "sine", accent: 690 },
+  "四叶草": { base: 600, wave: "triangle", accent: 800 },
+  "玉米": { base: 510, wave: "square", accent: 680 }
+};
+const layerVisualOffsets = {
+  0: { x: 0, y: 0 },
+  1: { x: 9, y: -7 },
+  2: { x: -8, y: 8 },
+  3: { x: 10, y: 10 },
+  4: { x: -10, y: -9 }
+};
 let resizeRafId = null;
 let stageResizeObserver = null;
 let audioContext = null;
@@ -123,7 +144,8 @@ const state = {
   tiles: [],
   tray: [],
   combo: 0,
-  hintTileId: null
+  hintTileId: null,
+  isResolvingMove: false
 };
 
 const audioSettings = {
@@ -216,15 +238,25 @@ function playTone({ frequency, duration, type = "sine", volume = 0.05, detune = 
   oscillator.stop(now + duration + 0.02);
 }
 
-function playCollectSound() {
-  playTone({ frequency: 660, duration: 0.12, type: "triangle", volume: 0.045 });
-  playTone({ frequency: 880, duration: 0.11, type: "triangle", volume: 0.03, delay: 0.04 });
+function getTypeSoundProfile(typeName) {
+  return typeSoundProfiles[typeName] || { base: 560, wave: "sine", accent: 730 };
 }
 
-function playMatchSound() {
-  playTone({ frequency: 880, duration: 0.18, type: "square", volume: 0.07 });
-  playTone({ frequency: 1175, duration: 0.16, type: "triangle", volume: 0.06, delay: 0.08 });
-  playTone({ frequency: 1568, duration: 0.18, type: "triangle", volume: 0.05, delay: 0.15 });
+function playCollectSound(tileType) {
+  const profile = getTypeSoundProfile(tileType.name);
+  playTone({ frequency: profile.base, duration: 0.09, type: profile.wave, volume: 0.024 });
+  playTone({ frequency: profile.accent, duration: 0.08, type: "sine", volume: 0.016, delay: 0.03 });
+}
+
+function playMatchSound(comboLevel = 1, typeName = "") {
+  const profile = getTypeSoundProfile(typeName);
+  const comboBoost = Math.min(0.028, Math.max(0, comboLevel - 1) * 0.006);
+  playTone({ frequency: profile.accent * 1.1, duration: 0.18, type: "square", volume: 0.07 + comboBoost });
+  playTone({ frequency: profile.accent * 1.42, duration: 0.16, type: "triangle", volume: 0.06 + comboBoost, delay: 0.08 });
+  playTone({ frequency: profile.accent * 1.86, duration: 0.18, type: "triangle", volume: 0.05 + comboBoost, delay: 0.15 });
+  if (comboLevel >= 4) {
+    playTone({ frequency: profile.accent * 2.08, duration: 0.2, type: "triangle", volume: 0.045 + comboBoost, delay: 0.22 });
+  }
 }
 
 function playWinSound() {
@@ -393,8 +425,18 @@ function shuffle(array) {
   return copy;
 }
 
+function getEffectiveTilePosition(tile) {
+  const offset = layerVisualOffsets[tile.layer] || layerVisualOffsets[0];
+  return {
+    x: tile.x + offset.x,
+    y: tile.y + offset.y
+  };
+}
+
 function overlaps(tileA, tileB) {
-  return Math.abs(tileA.x - tileB.x) < 58 && Math.abs(tileA.y - tileB.y) < 58;
+  const first = getEffectiveTilePosition(tileA);
+  const second = getEffectiveTilePosition(tileB);
+  return Math.abs(first.x - second.x) < 58 && Math.abs(first.y - second.y) < 58;
 }
 
 function getExposedTileIds(activeTiles) {
@@ -463,11 +505,12 @@ function isTileClickable(tileId) {
 }
 
 function createTileElement(tile) {
+  const position = getEffectiveTilePosition(tile);
   const button = document.createElement("button");
   button.className = "tile";
   button.type = "button";
-  button.style.left = `${tile.x}px`;
-  button.style.top = `${tile.y}px`;
+  button.style.left = `${position.x}px`;
+  button.style.top = `${position.y}px`;
   button.style.zIndex = String(tile.layer * 20 + tile.id + 1);
   button.dataset.id = String(tile.id);
   button.setAttribute("aria-label", `${tile.type.name} 卡牌`);
@@ -561,7 +604,7 @@ function removeTriplesIfNeeded() {
   });
 
   state.combo += 1;
-  playMatchSound();
+  playMatchSound(state.combo, matchedTypeName);
   if (trayPanelElement) {
     trayPanelElement.classList.remove("tray-card-match");
     void trayPanelElement.offsetWidth;
@@ -598,7 +641,7 @@ function checkGameState() {
 }
 
 function handleTileClick(tileId) {
-  if (!isTileClickable(tileId) || !overlayElement.classList.contains("hidden")) {
+  if (!isTileClickable(tileId) || !overlayElement.classList.contains("hidden") || state.isResolvingMove) {
     return;
   }
 
@@ -607,7 +650,8 @@ function handleTileClick(tileId) {
     return;
   }
 
-  playCollectSound();
+  state.isResolvingMove = true;
+  playCollectSound(tile.type);
   const trayIndex = state.tray.length;
   animateTileToTray(tile.id, tile.type, trayIndex);
   tile.removed = true;
@@ -615,14 +659,23 @@ function handleTileClick(tileId) {
   state.hintTileId = null;
   setMessage(`已收下 ${tile.type.name}，留意收纳槽里的配对机会。`);
 
-  while (removeTriplesIfNeeded()) {
-    // 连续清理所有已凑齐的三连。
-  }
-
   updateStatus();
   renderTray();
   renderBoard();
-  checkGameState();
+
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const settleDelay = prefersReducedMotion ? 0 : 370;
+  window.setTimeout(() => {
+    while (removeTriplesIfNeeded()) {
+      // 卡片进入收纳槽后，再连锁清理凑齐的三连。
+    }
+
+    updateStatus();
+    renderTray();
+    renderBoard();
+    checkGameState();
+    state.isResolvingMove = false;
+  }, settleDelay);
 }
 
 function showHint() {
