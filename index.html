@@ -49,6 +49,11 @@
           <div class="action-row">
             <button id="hintButton" class="action-button action-button-soft" type="button">提示</button>
             <button id="restartButton" class="action-button" type="button">重新开局</button>
+            <button id="audioToggleButton" class="action-button action-button-soft" type="button" aria-pressed="false">声音：开</button>
+            <label class="volume-control" for="volumeRange">
+              <span>音量</span>
+              <input id="volumeRange" type="range" min="0" max="100" step="1" value="60" />
+            </label>
           </div>
         </div>
 
@@ -59,31 +64,16 @@
             <div class="board" id="board" aria-live="polite"></div>
           </div>
         </div>
-      </div>
 
-      <aside class="sidebar">
-        <section class="card info-card">
-          <h2>玩法说明</h2>
-          <ul class="rule-list">
-            <li>卡槽最多容纳 7 张卡牌。</li>
-            <li>凑齐 3 张相同图案会自动消除。</li>
-            <li>卡槽放满且无法继续消除时，本局失败。</li>
-          </ul>
-        </section>
-
-        <section class="card info-card highlight-card">
-          <h2>本局状态</h2>
-          <p id="messageBox">收纳槽已经清理完毕，准备开始新的一局。</p>
-        </section>
-
-        <section class="card tray-card">
+        <section class="card tray-card" id="trayPanel">
           <div class="tray-heading">
             <h2>收纳槽</h2>
             <span><strong id="trayCount">0</strong>/7</span>
           </div>
+          <p class="status-note" id="messageBox">收纳槽已经清理完毕，准备开始新的一局。</p>
           <div class="tray" id="tray"></div>
         </section>
-      </aside>
+      </div>
     </section>
   </main>
 
@@ -95,6 +85,8 @@
       <button id="overlayButton" class="action-button" type="button">再来一局</button>
     </div>
   </div>
+
+  <div class="confetti-layer" id="confettiLayer" aria-hidden="true"></div>
 
   <script src="game.js"></script>
 </body>

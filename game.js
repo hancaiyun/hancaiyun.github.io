@@ -6,15 +6,24 @@ const trayCountElement = document.getElementById("trayCount");
 const messageBoxElement = document.getElementById("messageBox");
 const restartButton = document.getElementById("restartButton");
 const hintButton = document.getElementById("hintButton");
+const audioToggleButton = document.getElementById("audioToggleButton");
+const volumeRange = document.getElementById("volumeRange");
 const overlayElement = document.getElementById("overlay");
 const overlayKickerElement = document.getElementById("overlayKicker");
 const overlayTitleElement = document.getElementById("overlayTitle");
 const overlayTextElement = document.getElementById("overlayText");
 const overlayButton = document.getElementById("overlayButton");
 const playfieldStageElement = document.querySelector(".playfield-stage");
+const trayPanelElement = document.getElementById("trayPanel");
+const confettiLayerElement = document.getElementById("confettiLayer");
 
 const boardBaseWidth = 720;
 const boardBaseHeight = 520;
+const audioSettingsKey = "meadow-match-audio-settings";
+let resizeRafId = null;
+let stageResizeObserver = null;
+let audioContext = null;
+let audioUnlocked = false;
 
 const trayLimit = 7;
 const tileTypes = [
@@ -114,6 +123,197 @@ const state = {
   hintTileId: null
 };
 
+const audioSettings = {
+  muted: false,
+  volume: 0.6
+};
+
+function loadAudioSettings() {
+  try {
+    const raw = window.localStorage.getItem(audioSettingsKey);
+    if (!raw) {
+      return;
+    }
+
+    const parsed = JSON.parse(raw);
+    if (typeof parsed.muted === "boolean") {
+      audioSettings.muted = parsed.muted;
+    }
+    if (typeof parsed.volume === "number") {
+      audioSettings.volume = Math.min(1, Math.max(0, parsed.volume));
+    }
+  } catch {
+    // Ignore invalid persisted settings.
+  }
+}
+
+function saveAudioSettings() {
+  window.localStorage.setItem(audioSettingsKey, JSON.stringify(audioSettings));
+}
+
+function syncAudioControls() {
+  if (audioToggleButton) {
+    audioToggleButton.textContent = audioSettings.muted ? "声音：关" : "声音：开";
+    audioToggleButton.setAttribute("aria-pressed", String(audioSettings.muted));
+  }
+
+  if (volumeRange) {
+    volumeRange.value = String(Math.round(audioSettings.volume * 100));
+  }
+}
+
+function getAudioContext() {
+  if (!window.AudioContext && !window.webkitAudioContext) {
+    return null;
+  }
+
+  if (!audioContext) {
+    const ContextConstructor = window.AudioContext || window.webkitAudioContext;
+    audioContext = new ContextConstructor();
+  }
+
+  return audioContext;
+}
+
+function unlockAudio() {
+  const context = getAudioContext();
+  if (!context) {
+    return;
+  }
+
+  if (context.state === "suspended") {
+    context.resume();
+  }
+  audioUnlocked = true;
+}
+
+function playTone({ frequency, duration, type = "sine", volume = 0.05, detune = 0, delay = 0 }) {
+  const context = getAudioContext();
+  if (!context || audioSettings.muted || (!audioUnlocked && context.state !== "running")) {
+    return;
+  }
+
+  const now = context.currentTime + delay;
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, now);
+  oscillator.detune.setValueAtTime(detune, now);
+  const actualVolume = Math.max(0.0001, volume * audioSettings.volume);
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(actualVolume, now + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+  oscillator.connect(gain);
+  gain.connect(context.destination);
+  oscillator.start(now);
+  oscillator.stop(now + duration + 0.02);
+}
+
+function playCollectSound() {
+  playTone({ frequency: 660, duration: 0.12, type: "triangle", volume: 0.045 });
+  playTone({ frequency: 880, duration: 0.11, type: "triangle", volume: 0.03, delay: 0.04 });
+}
+
+function playMatchSound() {
+  playTone({ frequency: 784, duration: 0.14, type: "square", volume: 0.04 });
+  playTone({ frequency: 988, duration: 0.15, type: "triangle", volume: 0.04, delay: 0.08 });
+  playTone({ frequency: 1175, duration: 0.18, type: "triangle", volume: 0.03, delay: 0.16 });
+}
+
+function playWinSound() {
+  const notes = [523, 659, 784, 1047];
+  notes.forEach((frequency, index) => {
+    playTone({ frequency, duration: 0.18, type: "triangle", volume: 0.045, delay: index * 0.09 });
+  });
+}
+
+function playLoseSound() {
+  playTone({ frequency: 392, duration: 0.16, type: "sawtooth", volume: 0.03 });
+  playTone({ frequency: 311, duration: 0.24, type: "sawtooth", volume: 0.028, delay: 0.1 });
+}
+
+function launchConfettiBurst(intensity = 1) {
+  if (!confettiLayerElement) {
+    return;
+  }
+
+  const pieceCount = Math.round(70 + Math.min(90, 45 * intensity));
+  for (let index = 0; index < pieceCount; index += 1) {
+    const piece = document.createElement("span");
+    piece.className = "confetti-piece";
+    const startX = `${Math.random() * 100}%`;
+    const driftX = `${(Math.random() - 0.5) * (220 + intensity * 70)}px`;
+    const spin = `${(Math.random() - 0.5) * 840}deg`;
+    const fallTime = `${Math.max(1.3, 2.2 - intensity * 0.18) + Math.random() * 1.1}s`;
+    const hue = Math.floor(Math.random() * 360);
+    piece.style.setProperty("--start-x", startX);
+    piece.style.setProperty("--drift-x", driftX);
+    piece.style.setProperty("--spin", spin);
+    piece.style.setProperty("--fall-time", fallTime);
+    piece.style.setProperty("--hue", String(hue));
+    confettiLayerElement.appendChild(piece);
+    piece.addEventListener("animationend", () => piece.remove(), { once: true });
+  }
+}
+
+function animateTileToTray(tileId, tileType, trayIndex) {
+  const sourceElement = boardElement.querySelector(`.tile[data-id="${tileId}"]`);
+  if (!sourceElement || !trayElement) {
+    return;
+  }
+
+  const sourceRect = sourceElement.getBoundingClientRect();
+  const trayRect = trayElement.getBoundingClientRect();
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  sourceElement.classList.add("tile-collecting");
+  if (prefersReducedMotion) {
+    return;
+  }
+
+  const trayStyle = window.getComputedStyle(trayElement);
+  const columns = Math.max(1, trayStyle.gridTemplateColumns.split(" ").length);
+  const rows = Math.ceil(trayLimit / columns);
+  const column = trayIndex % columns;
+  const row = Math.floor(trayIndex / columns);
+
+  const cellWidth = trayRect.width / columns;
+  const cellHeight = trayRect.height / Math.max(rows, 1);
+  const targetX = trayRect.left + cellWidth * column + cellWidth / 2 - sourceRect.width / 2;
+  const targetY = trayRect.top + cellHeight * row + cellHeight / 2 - sourceRect.height / 2;
+
+  const ghost = document.createElement("div");
+  ghost.className = "tile tile-fly-ghost";
+  ghost.style.width = `${sourceRect.width}px`;
+  ghost.style.height = `${sourceRect.height}px`;
+  ghost.style.left = `${sourceRect.left}px`;
+  ghost.style.top = `${sourceRect.top}px`;
+  ghost.innerHTML = `<div class="tile-inner"><span>${tileType.icon}</span><span class="tile-label">${tileType.name}</span></div>`;
+  document.body.appendChild(ghost);
+
+  const deltaX = targetX - sourceRect.left;
+  const deltaY = targetY - sourceRect.top;
+  ghost.animate(
+    [
+      { transform: "translate3d(0,0,0) scale(1)", opacity: 1 },
+      { transform: `translate3d(${deltaX}px, ${deltaY}px, 0) scale(0.58) rotate(8deg)`, opacity: 0.72 }
+    ],
+    {
+      duration: 360,
+      easing: "cubic-bezier(0.2, 0.75, 0.25, 1)",
+      fill: "forwards"
+    }
+  ).addEventListener("finish", () => {
+    ghost.remove();
+    trayElement.classList.remove("tray-pop");
+    void trayElement.offsetWidth;
+    trayElement.classList.add("tray-pop");
+  }, { once: true });
+}
+
 function updateBoardScale() {
   if (!playfieldStageElement) {
     return;
@@ -126,6 +326,33 @@ function updateBoardScale() {
 
   playfieldStageElement.style.setProperty("--board-scale", String(scale));
   playfieldStageElement.style.setProperty("--board-shell-height", `${Math.round(boardBaseHeight * scale)}px`);
+}
+
+function scheduleBoardScale() {
+  if (resizeRafId !== null) {
+    return;
+  }
+
+  resizeRafId = window.requestAnimationFrame(() => {
+    resizeRafId = null;
+    updateBoardScale();
+  });
+}
+
+function setupResponsiveBoardScale() {
+  if (!playfieldStageElement) {
+    return;
+  }
+
+  if (window.ResizeObserver) {
+    stageResizeObserver = new ResizeObserver(() => {
+      scheduleBoardScale();
+    });
+    stageResizeObserver.observe(playfieldStageElement);
+  }
+
+  window.addEventListener("resize", scheduleBoardScale);
+  window.addEventListener("orientationchange", scheduleBoardScale);
 }
 
 function shuffle(array) {
@@ -261,7 +488,9 @@ function renderTray() {
 }
 
 function setMessage(text) {
-  messageBoxElement.textContent = text;
+  if (messageBoxElement) {
+    messageBoxElement.textContent = text;
+  }
 }
 
 function updateStatus() {
@@ -303,6 +532,12 @@ function removeTriplesIfNeeded() {
   });
 
   state.combo += 1;
+  playMatchSound();
+  if (trayPanelElement) {
+    trayPanelElement.classList.remove("tray-card-match");
+    void trayPanelElement.offsetWidth;
+    trayPanelElement.classList.add("tray-card-match");
+  }
   setMessage(`成功消除了 3 张${matchedTypeName}，继续保持节奏。`);
   return true;
 }
@@ -310,6 +545,9 @@ function removeTriplesIfNeeded() {
 function checkGameState() {
   const remaining = getActiveTiles().length;
   if (remaining === 0 && state.tray.length === 0) {
+    playWinSound();
+    const confettiIntensity = 1 + Math.min(4, state.combo / 3);
+    launchConfettiBurst(confettiIntensity);
     openOverlay({
       kicker: "完美过关",
       title: "草地清空啦",
@@ -320,6 +558,7 @@ function checkGameState() {
   }
 
   if (state.tray.length >= trayLimit) {
+    playLoseSound();
     openOverlay({
       kicker: "差一点",
       title: "收纳槽装满了",
@@ -339,6 +578,9 @@ function handleTileClick(tileId) {
     return;
   }
 
+  playCollectSound();
+  const trayIndex = state.tray.length;
+  animateTileToTray(tile.id, tile.type, trayIndex);
   tile.removed = true;
   state.tray.push({ id: tile.id, type: tile.type });
   state.hintTileId = null;
@@ -397,12 +639,36 @@ function startGame() {
 restartButton.addEventListener("click", startGame);
 hintButton.addEventListener("click", showHint);
 overlayButton.addEventListener("click", startGame);
+
+if (audioToggleButton) {
+  audioToggleButton.addEventListener("click", () => {
+    unlockAudio();
+    audioSettings.muted = !audioSettings.muted;
+    syncAudioControls();
+    saveAudioSettings();
+  });
+}
+
+if (volumeRange) {
+  volumeRange.addEventListener("input", event => {
+    const value = Number(event.target.value);
+    audioSettings.volume = Math.min(1, Math.max(0, value / 100));
+    syncAudioControls();
+    saveAudioSettings();
+  });
+}
+
 overlayElement.addEventListener("click", event => {
   if (event.target === overlayElement) {
     closeOverlay();
   }
 });
 
-window.addEventListener("resize", updateBoardScale);
+document.addEventListener("pointerdown", unlockAudio, { once: true });
+
+loadAudioSettings();
+syncAudioControls();
+
+setupResponsiveBoardScale();
 
 startGame();
