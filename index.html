@@ -3,156 +3,97 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Tech Blog</title>
-<meta name="description" content="个人技术博客，分享前端、后端、工程化实践与项目经验。" />
-<meta name="keywords" content="技术博客, 前端, 后端, JavaScript, Vue, Node.js, 工程化" />
-<meta name="author" content="hancaiyun" />
-<meta name="theme-color" content="#2563eb" />
-
-<!-- Open Graph -->
-<meta property="og:type" content="website" />
-<meta property="og:title" content="Your Tech Blog" />
-<meta property="og:description" content="分享前端、后端、工程化实践与项目经验。" />
-<meta property="og:url" content="https://hancaiyun.github.io/" />
-<meta property="og:image" content="https://hancaiyun.github.io/og-cover.png" />
-<meta property="og:locale" content="zh_CN" />
-
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="Your Tech Blog" />
-<meta name="twitter:description" content="分享前端、后端、工程化实践与项目经验。" />
-<meta name="twitter:image" content="https://hancaiyun.github.io/og-cover.png" />
-
-<!-- Favicon -->
-<link rel="icon" href="/favicon.ico" />
+  <title>绵绵消消乐</title>
+  <meta name="description" content="一个欢快轻松的网页三消小游戏，灵感来自层叠消除玩法，打开即玩。" />
+  <meta name="theme-color" content="#72c44f" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <nav class="navbar">
-    <div class="logo"><a href="/">Your Blog</a></div>
-    <div class="nav-links">
-      <a href="#about">About</a>
-      <a href="#posts">Latest Posts</a>
-      <a href="#tech-stack">Tech Stack</a>
-      <a href="#contact">Contact</a>
-      <a href="https://github.com/hancaiyun" target="_blank" rel="noopener noreferrer">GitHub</a>
+  <main class="page-shell">
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <p class="eyebrow">Meadow Match</p>
+        <h1>绵绵消消乐</h1>
+        <p class="subtitle">
+          点击未被遮挡的卡牌，把三张相同图案收进收纳槽即可消除。
+          节奏轻快，难度适中，适合随手来一局。
+        </p>
+      </div>
+
+      <div class="status-rack">
+        <div class="status-pill">
+          <span>关卡</span>
+          <strong id="levelLabel">普通草地</strong>
+        </div>
+        <div class="status-pill">
+          <span>剩余卡牌</span>
+          <strong id="remainingCount">0</strong>
+        </div>
+        <div class="status-pill">
+          <span>最佳连消</span>
+          <strong id="comboCount">0</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="game-panel" aria-label="三消游戏区域">
+      <div class="playfield-wrap">
+        <div class="playfield-header">
+          <div>
+            <h2>草地牌阵</h2>
+            <p>只能点击最上层且没有被覆盖的卡牌。</p>
+          </div>
+          <div class="action-row">
+            <button id="hintButton" class="action-button action-button-soft" type="button">提示</button>
+            <button id="restartButton" class="action-button" type="button">重新开局</button>
+          </div>
+        </div>
+
+        <div class="playfield-stage">
+          <div class="cloud cloud-left"></div>
+          <div class="cloud cloud-right"></div>
+          <div class="board" id="board" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <section class="card info-card">
+          <h2>玩法说明</h2>
+          <ul class="rule-list">
+            <li>卡槽最多容纳 7 张卡牌。</li>
+            <li>凑齐 3 张相同图案会自动消除。</li>
+            <li>卡槽放满且无法继续消除时，本局失败。</li>
+          </ul>
+        </section>
+
+        <section class="card info-card highlight-card">
+          <h2>本局状态</h2>
+          <p id="messageBox">收纳槽已经清理完毕，准备开始新的一局。</p>
+        </section>
+
+        <section class="card tray-card">
+          <div class="tray-heading">
+            <h2>收纳槽</h2>
+            <span><strong id="trayCount">0</strong>/7</span>
+          </div>
+          <div class="tray" id="tray"></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <div class="overlay hidden" id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlayTitle">
+    <div class="overlay-card">
+      <p class="overlay-kicker" id="overlayKicker">太棒了</p>
+      <h2 id="overlayTitle">成功过关</h2>
+      <p id="overlayText">这一局打得很顺，继续保持。</p>
+      <button id="overlayButton" class="action-button" type="button">再来一局</button>
     </div>
-  </nav>
+  </div>
 
-  <header class="hero">
-    <h1>Welcome to My Technical Blog</h1>
-    <p>Explore my insights and projects in tech.</p>
-    <div class="cta-buttons">
-      <a class="btn btn-primary" href="#posts">Read My Latest Posts</a>
-      <a
-        class="btn btn-secondary"
-        href="https://github.com/hancaiyun?tab=repositories"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        View Projects
-      </a>
-    </div>
-  </header>
-
-  <section class="featured-article">
-    <h2>Featured Article</h2>
-    <div class="card">
-      <h3>Understanding Vue.js</h3>
-      <p>A comprehensive guide to Vue.js and its ecosystem.</p>
-      <a class="btn btn-primary" href="#posts">Read More</a>
-    </div>
-  </section>
-
-  <section class="latest-posts" id="posts">
-    <h2>Latest Posts</h2>
-    <div class="posts-grid">
-      <article class="post-card">
-        <h3>Post Title 1</h3>
-        <p>Brief description of the post.</p>
-      </article>
-      <article class="post-card">
-        <h3>Post Title 2</h3>
-        <p>Brief description of the post.</p>
-      </article>
-      <article class="post-card">
-        <h3>Post Title 3</h3>
-        <p>Brief description of the post.</p>
-      </article>
-      <article class="post-card">
-        <h3>Post Title 4</h3>
-        <p>Brief description of the post.</p>
-      </article>
-      <article class="post-card">
-        <h3>Post Title 5</h3>
-        <p>Brief description of the post.</p>
-      </article>
-      <article class="post-card">
-        <h3>Post Title 6</h3>
-        <p>Brief description of the post.</p>
-      </article>
-    </div>
-  </section>
-
-  <section class="about-me" id="about">
-    <h2>About Me</h2>
-    <p>Hi! I'm a tech enthusiast sharing my journey and insights.</p>
-  </section>
-
-  <section class="tech-stack" id="tech-stack">
-    <h2>Tech Stack</h2>
-    <p>HTML, CSS, JavaScript, Vue.js, Node.js</p>
-  </section>
-
-  <section id="contact">
-    <h2>Contact</h2>
-    <p>
-      Welcome to connect with me on
-      <a href="https://github.com/hancaiyun" target="_blank" rel="noopener noreferrer">GitHub</a>.
-    </p>
-  </section>
-
-  <footer>
-    <p>&copy; 2026 Your Blog. All Rights Reserved.</p>
-  </footer>
-<script>
-  (function () {
-    const navLinks = Array.from(document.querySelectorAll('.nav-links a[href^="#"]'));
-    const sections = navLinks
-      .map(link => document.querySelector(link.getAttribute('href')))
-      .filter(Boolean);
-
-    if (!navLinks.length || !sections.length) return;
-
-    function setActiveByScroll() {
-      const offset = 110; // 考虑 sticky nav 高度
-      let currentId = sections[0].id;
-
-      for (const section of sections) {
-        const top = section.getBoundingClientRect().top + window.scrollY;
-        if (window.scrollY + offset >= top) {
-          currentId = section.id;
-        }
-      }
-
-      navLinks.forEach(link => {
-        const target = link.getAttribute('href').slice(1);
-        link.classList.toggle('active', target === currentId);
-      });
-    }
-
-    // 初次执行 + 滚动监听
-    setActiveByScroll();
-    window.addEventListener('scroll', setActiveByScroll, { passive: true });
-
-    // 点击后立刻切换 active（提升交互即时感）
-    navLinks.forEach(link => {
-      link.addEventListener('click', () => {
-        navLinks.forEach(a => a.classList.remove('active'));
-        link.classList.add('active');
-      });
-    });
-  })();
-</script>
+  <script src="game.js"></script>
 </body>
 </html>
