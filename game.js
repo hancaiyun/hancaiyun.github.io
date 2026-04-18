@@ -20,10 +20,13 @@ const confettiLayerElement = document.getElementById("confettiLayer");
 const boardBaseWidth = 720;
 const boardBaseHeight = 520;
 const audioSettingsKey = "meadow-match-audio-settings";
+const bgmNotePattern = [261.63, 329.63, 392, 329.63, 293.66, 349.23, 440, 349.23, 261.63, 329.63, 392, 523.25];
 let resizeRafId = null;
 let stageResizeObserver = null;
 let audioContext = null;
 let audioUnlocked = false;
+let bgmTimerId = null;
+let bgmStep = 0;
 
 const trayLimit = 7;
 const tileTypes = [
@@ -185,6 +188,7 @@ function unlockAudio() {
     context.resume();
   }
   audioUnlocked = true;
+  startBackgroundMusic();
 }
 
 function playTone({ frequency, duration, type = "sine", volume = 0.05, detune = 0, delay = 0 }) {
@@ -218,9 +222,9 @@ function playCollectSound() {
 }
 
 function playMatchSound() {
-  playTone({ frequency: 784, duration: 0.14, type: "square", volume: 0.04 });
-  playTone({ frequency: 988, duration: 0.15, type: "triangle", volume: 0.04, delay: 0.08 });
-  playTone({ frequency: 1175, duration: 0.18, type: "triangle", volume: 0.03, delay: 0.16 });
+  playTone({ frequency: 880, duration: 0.18, type: "square", volume: 0.07 });
+  playTone({ frequency: 1175, duration: 0.16, type: "triangle", volume: 0.06, delay: 0.08 });
+  playTone({ frequency: 1568, duration: 0.18, type: "triangle", volume: 0.05, delay: 0.15 });
 }
 
 function playWinSound() {
@@ -233,6 +237,31 @@ function playWinSound() {
 function playLoseSound() {
   playTone({ frequency: 392, duration: 0.16, type: "sawtooth", volume: 0.03 });
   playTone({ frequency: 311, duration: 0.24, type: "sawtooth", volume: 0.028, delay: 0.1 });
+}
+
+function stopBackgroundMusic() {
+  if (!bgmTimerId) {
+    return;
+  }
+
+  window.clearInterval(bgmTimerId);
+  bgmTimerId = null;
+}
+
+function startBackgroundMusic() {
+  const context = getAudioContext();
+  if (!context || audioSettings.muted || (!audioUnlocked && context.state !== "running") || bgmTimerId) {
+    return;
+  }
+
+  const beatMs = 460;
+  bgmTimerId = window.setInterval(() => {
+    const note = bgmNotePattern[bgmStep % bgmNotePattern.length];
+    const accent = bgmStep % 4 === 0;
+    playTone({ frequency: note, duration: 0.34, type: "triangle", volume: accent ? 0.03 : 0.022 });
+    playTone({ frequency: note / 2, duration: 0.3, type: "sine", volume: accent ? 0.018 : 0.014, delay: 0.03 });
+    bgmStep += 1;
+  }, beatMs);
 }
 
 function launchConfettiBurst(intensity = 1) {
@@ -644,6 +673,11 @@ if (audioToggleButton) {
   audioToggleButton.addEventListener("click", () => {
     unlockAudio();
     audioSettings.muted = !audioSettings.muted;
+    if (audioSettings.muted) {
+      stopBackgroundMusic();
+    } else {
+      startBackgroundMusic();
+    }
     syncAudioControls();
     saveAudioSettings();
   });
@@ -653,6 +687,9 @@ if (volumeRange) {
   volumeRange.addEventListener("input", event => {
     const value = Number(event.target.value);
     audioSettings.volume = Math.min(1, Math.max(0, value / 100));
+    if (!audioSettings.muted) {
+      startBackgroundMusic();
+    }
     syncAudioControls();
     saveAudioSettings();
   });
@@ -668,6 +705,9 @@ document.addEventListener("pointerdown", unlockAudio, { once: true });
 
 loadAudioSettings();
 syncAudioControls();
+if (!audioSettings.muted) {
+  startBackgroundMusic();
+}
 
 setupResponsiveBoardScale();
 
